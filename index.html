@@ -115,8 +115,8 @@ header{background:#0d1829;padding:12px 28px;display:flex;align-items:center;gap:
 
 /* MDC CARD */
 .mdc-card{width:1080px;height:1080px;background:#0d1829;display:flex;flex-direction:column;overflow:hidden;font-family:'Bauziet',Georgia,serif;position:absolute;top:0;left:0;}
-.mdc-name{font-family:'Bauziet',Georgia,serif;font-weight:400;color:#fff;text-transform:uppercase;line-height:1.15;}
-.mdc-amt{font-family:'Bauziet',Georgia,serif;font-style:italic;color:rgba(255,255,255,.88);line-height:1.2;margin-top:3px;}
+.mdc-name{font-family:'Bauziet',Georgia,serif;font-weight:700;color:#fff;text-transform:uppercase;line-height:1.15;}
+.mdc-amt{font-family:'Bauziet',Georgia,serif;font-weight:400;color:rgba(255,255,255,.92);line-height:1.2;margin-top:6px;}
 
 #render-wrap{position:fixed;left:-1200px;top:0;width:1080px;height:1080px;pointer-events:none;z-index:-1;}
 #renderCard{width:1080px;height:1080px;}
@@ -196,7 +196,7 @@ header{background:#0d1829;padding:12px 28px;display:flex;align-items:center;gap:
     <div class="sec">
       <div class="sec-hd">Typography</div>
       <div class="row"><div class="sl"><label>Title Size <span id="vTitleSz">64</span>px</label><input type="range" id="titleSz" min="40" max="100" value="64"></div></div>
-      <div class="row"><div class="sl"><label>Closed Sales Size <span id="vClosedSz">14</span>px</label><input type="range" id="closedSz" min="10" max="28" value="14"></div></div>
+      <div class="row"><div class="sl"><label>Closed Sales Size <span id="vClosedSz">18</span>px</label><input type="range" id="closedSz" min="10" max="28" value="18"></div></div>
       <div class="row"><div class="sl"><label>Name Size <span id="vNameSz">26</span>px</label><input type="range" id="nameSz" min="12" max="52" value="26"></div></div>
       <div class="row"><div class="sl"><label>Name Tracking <span id="vNameTk">4</span>px</label><input type="range" id="nameTk" min="-6" max="16" value="4"></div></div>
       <div class="row"><div class="sl"><label>Amount Size <span id="vAmtSz">22</span>px</label><input type="range" id="amtSz" min="10" max="44" value="22"></div></div>
@@ -311,7 +311,7 @@ function getLogoForOffice(name){
 const MONTHS    = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const LOGO_H    = 50;
 const OFFICE_FS = 21;
-const TITLE_TK  = 3;
+const TITLE_TK  = 6;
 const HDR_SP    = 20;
 const PAD_R     = 68;
 const LS_PREFIX = 'mdc_agents_'; // localStorage key prefix
@@ -410,30 +410,46 @@ function S(){
 }
 
 // ── AUTO SIZES ──
-function autoSizes(count, padT, titleSz){
-  const singleCol = count <= 5;
+function autoSizes(count, padT, titleSz, padL, nameTk, agents){
+  const singleCol = count <= 3;
   const rows      = singleCol ? count : Math.ceil(count/2);
   const safeRows  = rows||1;
+  const officeRow = OFFICE_FS+14;
   const logoRow   = LOGO_H+HDR_SP;
   const titleRow  = titleSz+Math.round(titleSz*.12);
+  const subRow    = Math.round(titleSz*.45)+18;
   const padBot    = Math.round(padT*.75);
-  const headerH   = padT+logoRow+titleRow+2+padBot;
+  const headerH   = padT+officeRow+logoRow+titleRow+subRow+Math.round(titleSz*.45)+2+padBot;
   const availH    = 1080-headerH;
   const rowH      = (availH-Math.max(0,safeRows-1))/safeRows;
-  const textH     = rowH*.48;
-  let ns=Math.round(textH*.57), as=Math.round(textH*.43);
-  // Cap: single column looks best up to ~42px name, two-col up to ~30px
-  const maxName = singleCol ? 42 : 30;
-  const maxAmt  = singleCol ? 34 : 24;
+  const textH     = rowH*.46;
+  let ns=Math.round(textH*.55), as=Math.round(textH*.42);
+  const maxName = singleCol ? 56 : 28;
+  const maxAmt  = singleCol ? 44 : 22;
   ns = Math.min(maxName, Math.max(14, ns));
   as = Math.min(maxAmt,  Math.max(11, as));
+  // Width-fit: shrink ns so the longest name fits one line.
+  if(agents && agents.length){
+    const colW = singleCol
+      ? (1080 - 2*(padL||60))
+      : ((1080 - 2*(padL||60))/2 - 24);
+    const maxLen = agents.reduce((m,a)=>Math.max(m,(a.name||'').length),0);
+    if(maxLen>0){
+      // Bauziet bold approx: char width ~ ns*0.62, plus letter-spacing
+      const tk = Math.max(0, nameTk||0);
+      const need = (lenChars,sz)=> lenChars*sz*0.72 + Math.max(0,lenChars-1)*tk;
+      while(ns>12 && need(maxLen,ns) > colW) ns--;
+      // Keep amount proportional but never larger than original cap.
+      as = Math.min(as, Math.round(ns*0.78));
+    }
+  }
   return { nameSz:ns, amtSz:as };
 }
 
 function applyAutoSizes(forceCount){
   const s=S();
   const count=forceCount!==undefined?forceCount:s.agents.length;
-  const {nameSz,amtSz}=autoSizes(count,s.padT,s.titleSz);
+  const {nameSz,amtSz}=autoSizes(count,s.padT,s.titleSz,s.padL,s.nameTk,s.agents);
   setSlider('nameSz','vNameSz',nameSz);
   setSlider('amtSz','vAmtSz',amtSz);
 }
@@ -452,23 +468,22 @@ function getLogo(o){
   return getLogoForOffice(o.office);
 }
 function buildCard(o){
-  const single   = o.agents.length<=5;
+  const single   = o.agents.length<=3;
   const half     = Math.ceil(o.agents.length/2);
   const left     = o.agents.slice(0,half);
   const right    = o.agents.slice(half);
-  const numRows  = left.length||1;
-  const vbarH    = Math.round(LOGO_H*.72);
-  const vbarMg   = Math.round(o.padL*.30);
-  const closedPB = Math.round(o.titleSz*.07);
-  const titleMB  = Math.round(o.titleSz*.12);
+  const numRows  = single ? o.agents.length : (left.length||1);
   const padBot   = Math.round(o.padT*.75);
+  const officeMB = 14;
+  const subMT    = Math.round(o.titleSz*.20);
+  const divMT    = Math.round(o.titleSz*.45);
 
   let rows='';
   if(single){
     for(let i=0;i<o.agents.length;i++){
       const A=o.agents[i];
       const last=i===o.agents.length-1;
-      const bdr=last?'':'border-bottom:1px solid rgba(255,255,255,0.22);';
+      const bdr=last?'':'border-bottom:1px solid rgba(255,255,255,0.30);';
       rows+=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:0;overflow:hidden;${bdr}">
         <div class="mdc-name" style="font-size:${o.nameSz}px;letter-spacing:${o.nameTk}px;">${esc(A.name.toUpperCase())}</div>
         <div class="mdc-amt" style="font-size:${o.amtSz}px;">${esc(A.displayAmt)}</div>
@@ -478,31 +493,35 @@ function buildCard(o){
     for(let i=0;i<numRows;i++){
       const L=left[i], R=right[i];
       const last=i===numRows-1;
-      const bdr=last?'':'border-bottom:1px solid rgba(255,255,255,0.22);';
-      rows+=`<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;align-items:center;min-height:0;overflow:hidden;${bdr}">
-        <div style="padding-right:16px;min-width:0;">
+      const bdr=last?'':'border-bottom:1px solid rgba(255,255,255,0.30);';
+      if(L && !R){
+        rows+=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:0;overflow:hidden;${bdr}">
           <div class="mdc-name" style="font-size:${o.nameSz}px;letter-spacing:${o.nameTk}px;">${esc(L.name.toUpperCase())}</div>
           <div class="mdc-amt" style="font-size:${o.amtSz}px;">${esc(L.displayAmt)}</div>
-        </div>
-        <div style="padding-left:${o.padRC}px;min-width:0;">${R?`
-          <div class="mdc-name" style="font-size:${o.nameSz}px;letter-spacing:${o.nameTk}px;">${esc(R.name.toUpperCase())}</div>
-          <div class="mdc-amt" style="font-size:${o.amtSz}px;">${esc(R.displayAmt)}</div>`:''}
-        </div>
-      </div>`;
+        </div>`;
+      } else {
+        rows+=`<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;align-items:center;min-height:0;overflow:hidden;${bdr}">
+          <div style="text-align:center;min-width:0;padding:0 12px;">
+            <div class="mdc-name" style="font-size:${o.nameSz}px;letter-spacing:${o.nameTk}px;">${esc(L.name.toUpperCase())}</div>
+            <div class="mdc-amt" style="font-size:${o.amtSz}px;">${esc(L.displayAmt)}</div>
+          </div>
+          <div style="text-align:center;min-width:0;padding:0 12px;">
+            <div class="mdc-name" style="font-size:${o.nameSz}px;letter-spacing:${o.nameTk}px;">${esc(R.name.toUpperCase())}</div>
+            <div class="mdc-amt" style="font-size:${o.amtSz}px;">${esc(R.displayAmt)}</div>
+          </div>
+        </div>`;
+      }
     }
   }
 
-  return `<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;padding:${o.padT}px ${PAD_R}px ${padBot}px ${o.padL}px;">
-    <div style="display:flex;align-items:center;flex-shrink:0;margin-bottom:${HDR_SP}px;">
-      <img src="${getLogo(o)}" style="height:${LOGO_H}px;width:auto;display:block;" alt="">
-      <div style="width:1px;height:${vbarH}px;background:rgba(255,255,255,.25);margin:0 ${vbarMg}px;flex-shrink:0;"></div>
-      <div style="font-family:'Bauziet',Georgia,serif;font-style:italic;font-size:${OFFICE_FS}px;color:rgba(255,255,255,.85);line-height:1;">${esc(o.office)} Office</div>
+  return `<div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;padding:${o.padT}px ${o.padL}px ${padBot}px ${o.padL}px;">
+    <div style="text-align:center;font-family:'Bauziet',Georgia,serif;font-size:${OFFICE_FS}px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.85);line-height:1;margin-bottom:${officeMB}px;flex-shrink:0;">${esc(o.office)}</div>
+    <div style="text-align:center;flex-shrink:0;margin-bottom:${HDR_SP}px;">
+      <img src="${getLogo(o)}" style="height:${LOGO_H}px;width:auto;display:inline-block;" alt="">
     </div>
-    <div style="display:flex;align-items:flex-end;gap:18px;flex-shrink:0;margin-bottom:${titleMB}px;">
-      <div style="font-family:'Bauziet',Georgia,serif;font-size:${o.titleSz}px;font-weight:400;color:#fff;letter-spacing:${TITLE_TK}px;line-height:1;flex-shrink:0;">MILLION DOLLAR CLUB</div>
-      <div style="font-family:'Bauziet',Georgia,serif;font-style:italic;font-size:${o.closedSz}px;color:rgba(255,255,255,.58);padding-bottom:${closedPB}px;">*Closed Sales ${esc(o.month)} ${esc(o.year)}</div>
-    </div>
-    <div style="height:1px;background:rgba(255,255,255,.26);flex-shrink:0;"></div>
+    <div style="text-align:center;font-family:'Bauziet',Georgia,serif;font-size:${o.titleSz}px;font-weight:400;color:#fff;letter-spacing:${TITLE_TK}px;line-height:1;text-transform:uppercase;flex-shrink:0;">MILLION DOLLAR CLUB</div>
+    <div style="text-align:center;font-family:'Bauziet',Georgia,serif;font-size:${o.closedSz}px;font-weight:400;color:rgba(255,255,255,.78);letter-spacing:.18em;text-transform:uppercase;line-height:1;margin-top:${subMT}px;flex-shrink:0;">Closed Sales ${esc(o.month)} ${esc(o.year)}</div>
+    <div style="height:1px;background:rgba(255,255,255,.40);flex-shrink:0;margin-top:${divMT}px;"></div>
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;">${rows}</div>
   </div>`;
 }
