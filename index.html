@@ -494,23 +494,16 @@ function buildCard(o){
       const L=left[i], R=right[i];
       const last=i===numRows-1;
       const bdr=last?'':'border-bottom:1px solid rgba(255,255,255,0.30);';
-      if(L && !R){
-        rows+=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:0;overflow:hidden;${bdr}">
+      rows+=`<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;align-items:center;min-height:0;overflow:hidden;${bdr}">
+        <div style="text-align:center;min-width:0;padding:0 12px;">
           <div class="mdc-name" style="font-size:${o.nameSz}px;letter-spacing:${o.nameTk}px;">${esc(L.name.toUpperCase())}</div>
           <div class="mdc-amt" style="font-size:${o.amtSz}px;">${esc(L.displayAmt)}</div>
-        </div>`;
-      } else {
-        rows+=`<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;align-items:center;min-height:0;overflow:hidden;${bdr}">
-          <div style="text-align:center;min-width:0;padding:0 12px;">
-            <div class="mdc-name" style="font-size:${o.nameSz}px;letter-spacing:${o.nameTk}px;">${esc(L.name.toUpperCase())}</div>
-            <div class="mdc-amt" style="font-size:${o.amtSz}px;">${esc(L.displayAmt)}</div>
-          </div>
-          <div style="text-align:center;min-width:0;padding:0 12px;">
-            <div class="mdc-name" style="font-size:${o.nameSz}px;letter-spacing:${o.nameTk}px;">${esc(R.name.toUpperCase())}</div>
-            <div class="mdc-amt" style="font-size:${o.amtSz}px;">${esc(R.displayAmt)}</div>
-          </div>
-        </div>`;
-      }
+        </div>
+        <div style="text-align:center;min-width:0;padding:0 12px;">${R?`
+          <div class="mdc-name" style="font-size:${o.nameSz}px;letter-spacing:${o.nameTk}px;">${esc(R.name.toUpperCase())}</div>
+          <div class="mdc-amt" style="font-size:${o.amtSz}px;">${esc(R.displayAmt)}</div>`:''}
+        </div>
+      </div>`;
     }
   }
 
