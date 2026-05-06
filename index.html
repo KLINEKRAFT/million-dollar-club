@@ -4,7 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Million Dollar Club — Coldwell Banker Select</title>
-<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Bauziet';src:url('fonts/Bauziet-Regular.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:'Bauziet';src:url('fonts/Bauziet-Italic.otf') format('opentype');font-weight:400;font-style:italic;font-display:swap;}
+@font-face{font-family:'Bauziet';src:url('fonts/Bauziet-Bold.otf') format('opentype');font-weight:700;font-style:normal;font-display:swap;}
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -110,9 +114,9 @@ header{background:#0d1829;padding:12px 28px;display:flex;align-items:center;gap:
 .sel-row input{cursor:pointer;}
 
 /* MDC CARD */
-.mdc-card{width:1080px;height:1080px;background:#0d1829;display:flex;flex-direction:column;overflow:hidden;font-family:'EB Garamond',Georgia,serif;position:absolute;top:0;left:0;}
-.mdc-name{font-family:'EB Garamond',Georgia,serif;font-weight:400;color:#fff;text-transform:uppercase;line-height:1.15;}
-.mdc-amt{font-family:'EB Garamond',Georgia,serif;font-style:italic;color:rgba(255,255,255,.88);line-height:1.2;margin-top:3px;}
+.mdc-card{width:1080px;height:1080px;background:#0d1829;display:flex;flex-direction:column;overflow:hidden;font-family:'Bauziet',Georgia,serif;position:absolute;top:0;left:0;}
+.mdc-name{font-family:'Bauziet',Georgia,serif;font-weight:400;color:#fff;text-transform:uppercase;line-height:1.15;}
+.mdc-amt{font-family:'Bauziet',Georgia,serif;font-style:italic;color:rgba(255,255,255,.88);line-height:1.2;margin-top:3px;}
 
 #render-wrap{position:fixed;left:-1200px;top:0;width:1080px;height:1080px;pointer-events:none;z-index:-1;}
 #renderCard{width:1080px;height:1080px;}
@@ -492,11 +496,11 @@ function buildCard(o){
     <div style="display:flex;align-items:center;flex-shrink:0;margin-bottom:${HDR_SP}px;">
       <img src="${getLogo(o)}" style="height:${LOGO_H}px;width:auto;display:block;" alt="">
       <div style="width:1px;height:${vbarH}px;background:rgba(255,255,255,.25);margin:0 ${vbarMg}px;flex-shrink:0;"></div>
-      <div style="font-family:'EB Garamond',Georgia,serif;font-style:italic;font-size:${OFFICE_FS}px;color:rgba(255,255,255,.85);line-height:1;">${esc(o.office)} Office</div>
+      <div style="font-family:'Bauziet',Georgia,serif;font-style:italic;font-size:${OFFICE_FS}px;color:rgba(255,255,255,.85);line-height:1;">${esc(o.office)} Office</div>
     </div>
     <div style="display:flex;align-items:flex-end;gap:18px;flex-shrink:0;margin-bottom:${titleMB}px;">
-      <div style="font-family:'EB Garamond',Georgia,serif;font-size:${o.titleSz}px;font-weight:400;color:#fff;letter-spacing:${TITLE_TK}px;line-height:1;flex-shrink:0;">MILLION DOLLAR CLUB</div>
-      <div style="font-family:'EB Garamond',Georgia,serif;font-style:italic;font-size:${o.closedSz}px;color:rgba(255,255,255,.58);padding-bottom:${closedPB}px;">*Closed Sales ${esc(o.month)} ${esc(o.year)}</div>
+      <div style="font-family:'Bauziet',Georgia,serif;font-size:${o.titleSz}px;font-weight:400;color:#fff;letter-spacing:${TITLE_TK}px;line-height:1;flex-shrink:0;">MILLION DOLLAR CLUB</div>
+      <div style="font-family:'Bauziet',Georgia,serif;font-style:italic;font-size:${o.closedSz}px;color:rgba(255,255,255,.58);padding-bottom:${closedPB}px;">*Closed Sales ${esc(o.month)} ${esc(o.year)}</div>
     </div>
     <div style="height:1px;background:rgba(255,255,255,.26);flex-shrink:0;"></div>
     <div style="flex:1;display:flex;flex-direction:column;min-height:0;">${rows}</div>
